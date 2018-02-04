@@ -20,7 +20,11 @@ function chatConnection(wss) {
 
       switch (data.type) {
         case 'USER_ADD': {
-          users.push({ nickname: data.nickname });
+          let user = findUser(data.nickname);
+
+          if (!user) {
+            users.push({ nickname: data.nickname });
+          }
           sendRoomList(ws);
           break;
         }
@@ -31,7 +35,7 @@ function chatConnection(wss) {
         // TODO: consider removing this case. Perhaps not useful as the next case (ROOM_JOIN)
         // takes care of user listing as per the front-end chat app model.
         case 'USER_LIST': {
-          const users = findUsersInRoom(data.roomId);
+          const users = users // or findUsersInRoom(data.roomId) for members specific to this room.
 
           send({ type: 'USER_LIST', users }, ws);
           break;
@@ -52,7 +56,7 @@ function chatConnection(wss) {
 
             broadcast({
               type: 'USER_LIST',
-              users: findUsersInRoom(room.id)
+              users: users // or findUsersInRoom(room.id) for members specific to this room.
             }, ws);
           } else {
             sendError('The room doesn\'t exist.', ws);
@@ -63,12 +67,11 @@ function chatConnection(wss) {
           const user = findUser(data.nickname);
 
           if (user) {
-            delete user.roomId;
-
             broadcast({
               type: 'USER_LIST',
-              users: findUsersInRoom(user.roomId)
+              users: users // or findUsersInRoom(user.roomId) for members specific to this room.
             }, ws);
+            delete user.roomId;
           }
           break;
         }
