@@ -2,13 +2,14 @@ const WebSocket = require('ws')
 
 let wsServer;
 let users = [];
-let rooms = [
-  { name: 'HackerRank', id: '1001' },
-  { name: 'CodeSchool', id: '1002' },
-  { name: 'FreecodeSchool', id: '1003' },
-  { name: 'Cambridge', id: '1004' },
-  { name: 'Turku Univerity of Applied Sciences', id: '1005' },
-  { name: 'MIT', id: '1016' },
+const channels = [
+  { name: 'general', description: '', id: '1001' },
+  { name: 'random', description: '', id: '1002' },
+  { name: 'polymer', description: '', id: '1003' },
+  { name: 'emberjs', description: '', id: '1004' },
+  { name: 'ios', description: '', id: '1005' },
+  { name: 'angularjs', description: '', id: '1016' },
+  { name: 'reactjs', description: '', id: '1017' }
 ];
 
 function chatConnection(wss) {
@@ -25,11 +26,23 @@ function chatConnection(wss) {
           if (!user) {
             users.push({ nickname: data.nickname });
           }
-          sendRoomList(ws);
+          sendChannelList(ws);
+          broadcast({
+            type: 'USER_LIST',
+            users
+          }, ws);
           break;
         }
-        case 'ROOM_LIST': {
-          sendRoomList(ws);
+        case 'USER_LEAVE': {
+          users = users.filter(u => u.nickname !== data.nickname);
+
+          broadcast({
+            type: 'USER_LIST',
+            users
+          }, ws);
+        }
+        case 'CHANNEL_LIST': {
+          sendChannelList(ws);
           break;
         }
         // TODO: consider removing this case. Perhaps not useful as the next case (ROOM_JOIN)
@@ -80,9 +93,9 @@ function chatConnection(wss) {
             type: 'NEW_MESSAGE',
             message: data.message,
             author: data.nickname,
-            time: data.time,
-            roomId: data.roomId,
+            channelId: data.channelId,
             isPrivate: data.isPrivate,
+            time: data.time,
             id: data.id
           }, ws);
           break;
@@ -93,9 +106,9 @@ function chatConnection(wss) {
 
     ws.on('close', () => {
       // users = users.filter(u => u.nickname !== user.nickname);
-      broadcast({
-        type: 'USER_LEAVE'
-      }, ws);
+      // broadcast({
+      //   type: 'USER_LEAVE'
+      // }, ws);
     });
   }
 }
@@ -114,10 +127,10 @@ function broadcast(data, ws) {
   }
 }
 
-function sendRoomList(ws) {
+function sendChannelList(ws) {
   send({
-    type: 'ROOM_LIST',
-    rooms
+    type: 'CHANNEL_LIST',
+    channels
   }, ws);
 }
 
