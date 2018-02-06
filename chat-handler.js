@@ -50,42 +50,10 @@ function chatConnection(wss) {
         case 'USER_LIST': {
           const users = users // or findUsersInRoom(data.roomId) for members specific to this room.
 
-          send({ type: 'USER_LIST', users }, ws);
-          break;
-        }
-        case 'ROOM_JOIN': {
-          const room = findRoom(data.roomId);
-          let user = findUser(data.nickname);
-
-          if (room) {
-            if (!user) {
-              user = { nickname: data.nickname };
-              users.push({
-                nickname: data.nickname,
-                roomId: room.id
-              });
-            }
-            user.roomId = room.id;
-
-            broadcast({
-              type: 'USER_LIST',
-              users: users // or findUsersInRoom(room.id) for members specific to this room.
-            }, ws);
-          } else {
-            sendError('The room doesn\'t exist.', ws);
-          }
-          break;
-        }
-        case 'ROOM_LEAVE': {
-          const user = findUser(data.nickname);
-
-          if (user) {
-            broadcast({
-              type: 'USER_LIST',
-              users: users // or findUsersInRoom(user.roomId) for members specific to this room.
-            }, ws);
-            delete user.roomId;
-          }
+          send({
+            type: 'USER_LIST',
+            users
+          }, ws);
           break;
         }
         case 'MESSAGE_ADD':
