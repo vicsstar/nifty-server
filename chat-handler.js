@@ -27,10 +27,6 @@ function chatConnection(wss) {
             users.push({ nickname: data.nickname });
           }
           sendChannelList(ws);
-          // broadcast({
-          //   type: 'USER_LIST',
-          //   users
-          // }, ws);
           break;
         }
         case 'USER_LEAVE': {
