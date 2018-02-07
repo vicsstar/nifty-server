@@ -70,9 +70,7 @@ function broadcast(data, ws) {
   if (wsServer) {
     wsServer.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
-        if (data.type === 'USER_LIST') {
-          send(data, client);
-        } else if (client !== ws) {
+        if (client !== ws) {
           send(data, client);
         }
       }
@@ -84,6 +82,11 @@ function sendChannelList(ws) {
   send({
     type: 'CHANNEL_LIST',
     channels,
+    users
+  }, ws);
+
+  broadcast({
+    type: 'USER_LIST',
     users
   }, ws);
 }
